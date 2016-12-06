@@ -6,6 +6,7 @@ using Android.Content;
 using Android.OS;
 using Xamarin.Forms;
 
+[assembly: Dependency(typeof(NotificationTest.Droid.PickFileService))]
 namespace NotificationTest.Droid
 {
 	public class PickFileService: IPickFileService
@@ -45,11 +46,11 @@ namespace NotificationTest.Droid
 
 				if (!String.IsNullOrWhiteSpace(e.AbsolutePath))
 				{
-					tcs.SetResult(e.AbsolutePath);
+					task.SetResult(e.AbsolutePath);
 				}
 				else
 				{
-					tcs.SetCanceled();
+					task.SetCanceled();
 				}
 			};
 
@@ -93,6 +94,8 @@ namespace NotificationTest.Droid
 					OnFilePicked(this, new FilePicked { AbsolutePath = data.Data.Path });
 				}
 			}
+
+			Finish();
 		}
 	}
 }
