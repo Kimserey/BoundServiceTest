@@ -10,6 +10,8 @@ using Android.OS;
 using Xamarin.Forms;
 using System.Collections.Generic;
 using Android.Util;
+using Java.Util;
+using Java.Lang;
 
 [assembly: Dependency(typeof(NotificationTest.Droid.NotificationService))]
 namespace NotificationTest.Droid
@@ -63,21 +65,22 @@ namespace NotificationTest.Droid
 	{
 		public override void OnReceive(Context context, Intent intent)
 		{
-			Notification.Builder builder = new Notification.Builder(Forms.Context)
+			Notification.Builder builder = new Notification.Builder(context)
 				.SetContentTitle("Hello received!")
 				.SetSmallIcon(Resource.Drawable.icon);
 
 			Notification notification = builder.Build();
 
-			NotificationManager notificationManager = Forms.Context.GetSystemService(Context.NotificationService) as NotificationManager;
+			NotificationManager notificationManager = context.GetSystemService(Context.NotificationService) as NotificationManager;
 
 			const int notificationId = 0;
 			notificationManager.Notify(notificationId, notification);
+
 		}
 	}
 
 	[Service]
-	[IntentFilter(new String[] { "com.kimserey.servicetest" })]
+	[IntentFilter(new System.String[] { "com.kimserey.servicetest" })]
 	public class HelloService : IntentService
 	{
 		IBinder binder;
@@ -130,7 +133,7 @@ namespace NotificationTest.Droid
 			base.OnStart();
 
 			var intentFilter = new IntentFilter(HelloService.HelloReceivedAction) { Priority = (int)IntentFilterPriority.LowPriority };
-
+			
 			// Register local receiver
 			RegisterReceiver(helloReceiver, intentFilter);
 
@@ -152,20 +155,36 @@ namespace NotificationTest.Droid
 			}
 
 			UnregisterReceiver(helloReceiver);
+
+			Cancel();
 		}
 
 
 		void ScheduleHello()
-		{ 
+		{
 			if (!IsAlarmSet())
 			{
 				var alarm = (AlarmManager)GetSystemService(Context.AlarmService);
 				var pendingServiceIntent = PendingIntent.GetService(this, 0, serviceIntent, PendingIntentFlags.CancelCurrent);
-				alarm.SetRepeating(AlarmType.Rtc, 0, 1000, pendingServiceIntent);
+				
+				// Start alarm around 8.30 and repeat every day
+				Calendar calendar = Calendar.Instance;
+				calendar.TimeInMillis = JavaSystem.CurrentTimeMillis();
+				calendar.Set(CalendarField.HourOfDay, 8);
+				calendar.Set(CalendarField.Minute, 30);
+
+				//alarm.SetInexactRepeating(AlarmType.Rtc, calendar.TimeInMillis, AlarmManager.IntervalDay, pendingServiceIntent);
+				alarm.SetInexactRepeating(AlarmType.Rtc, 0, 1000, pendingServiceIntent);
 			}
 		}
 
-		void Hello ()
+		void Cancel()
+		{ 
+			var alarm = (AlarmManager)GetSystemService(Context.AlarmService);
+			alarm.Cancel(PendingIntent.GetService(this, 0, serviceIntent, PendingIntentFlags.CancelCurrent));
+		}
+
+		void Hello()
 		{
 			if (isBound)
 			{
