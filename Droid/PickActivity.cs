@@ -91,7 +91,7 @@ namespace NotificationTest.Droid
 			{
 				if (OnFilePicked != null)
 				{
-					OnFilePicked(this, new FilePicked { AbsolutePath = data.Data.Path });
+					OnFilePicked(this, new FilePicked { AbsolutePath = data.Data.Path }); 
 				}
 			}
 
