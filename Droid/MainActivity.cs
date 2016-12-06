@@ -55,6 +55,8 @@ namespace NotificationTest.Droid
 		}
 	}
 
+	// External receiver
+	// Bound 
 	[BroadcastReceiver]
 	[IntentFilter(new string[] { HelloService.HelloReceivedAction }, Priority = (int)IntentFilterPriority.LowPriority)]
 	public class HelloNotificationReceiver : BroadcastReceiver
@@ -82,10 +84,10 @@ namespace NotificationTest.Droid
 
 		public const string HelloReceivedAction = "HelloReceived";
 
-		protected override void OnHandleIntent(Intent intent)
+		protected override void OnHandleIntent(Intent i)
 		{
-			var i = new Intent(HelloReceivedAction);
-			SendOrderedBroadcast(i, null);
+			var intent = new Intent(HelloReceivedAction);
+			SendOrderedBroadcast(intent, null);
 		}
 
 		public override IBinder OnBind(Intent intent)
@@ -128,6 +130,8 @@ namespace NotificationTest.Droid
 			base.OnStart();
 
 			var intentFilter = new IntentFilter(HelloService.HelloReceivedAction) { Priority = (int)IntentFilterPriority.LowPriority };
+
+			// Register local receiver
 			RegisterReceiver(helloReceiver, intentFilter);
 
 			serviceConnection = new HelloServiceConnection(this);
@@ -175,11 +179,14 @@ namespace NotificationTest.Droid
 			return PendingIntent.GetBroadcast(this, 0, serviceIntent, PendingIntentFlags.NoCreate) != null;
 		}
 
+		// Local receiver
+		// Hardcoded into the Activity
 		class HelloReceiver : BroadcastReceiver
 		{
 			public override void OnReceive(Context context, Android.Content.Intent intent)
 			{
 				((ServiceActivity)context).Hello();
+
 				InvokeAbortBroadcast();
 			}
 		}
